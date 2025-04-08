@@ -4,6 +4,7 @@ import com.example.signaturecreationapplication.dto.SignatureDto;
 import com.example.signaturecreationapplication.dto.SignatureGenerationResponseDto;
 import com.example.signaturecreationapplication.exception.SignatureGenerationException;
 import com.example.signaturecreationapplication.service.SignatureGenerationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
  * Реализация {@link SignatureGenerationService}.
  */
 @Service
+@Slf4j
 public class SignatureGenerationServiceImpl implements SignatureGenerationService {
 
     private static final String HMAC_ALGORITHM = "HmacSHA256";
@@ -33,8 +35,11 @@ public class SignatureGenerationServiceImpl implements SignatureGenerationServic
 
     @Override
     public SignatureGenerationResponseDto generateSignature(Map<String, String> parameters) {
+        log.info("Получен запрос на генерацию подписи: {}", parameters);
         String sortedParamString = buildSortedParameterString(parameters);
+        log.info("Параметры приведены к виду: " + sortedParamString);
         String signature = generateHmacSignature(sortedParamString, hmacSecret);
+        log.info("Подпись: " + signature);
 
         return buildSuccessResponse(signature);
     }
