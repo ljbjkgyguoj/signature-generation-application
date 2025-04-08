@@ -2,7 +2,6 @@ package com.example.signaturecreationapplication.service.impl;
 
 import com.example.signaturecreationapplication.dto.SignatureDto;
 import com.example.signaturecreationapplication.dto.SignatureGenerationResponseDto;
-import com.example.signaturecreationapplication.exception.SignatureGenerationException;
 import com.example.signaturecreationapplication.service.SignatureGenerationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,22 +59,23 @@ public class SignatureGenerationServiceImpl implements SignatureGenerationServic
     }
 
     private String generateHmacSignature(String data, String secret) {
-        try {
-            Mac mac = initializeMac(secret);
-            byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            throw new SignatureGenerationException("При генерации подписи произошла ошибка: ", e);
-        }
+        Mac mac = initializeMac(secret);
+        byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(hash);
     }
 
-    private Mac initializeMac(String secret) throws NoSuchAlgorithmException, InvalidKeyException {
-        Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-        SecretKeySpec secretKeySpec = new SecretKeySpec(
-                secret.getBytes(StandardCharsets.UTF_8),
-                HMAC_ALGORITHM
-        );
-        mac.init(secretKeySpec);
+    private Mac initializeMac(String secret) {
+        Mac mac = null;
+        try {
+            mac = Mac.getInstance(HMAC_ALGORITHM);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(
+                    secret.getBytes(StandardCharsets.UTF_8),
+                    HMAC_ALGORITHM
+            );
+            mac.init(secretKeySpec);
+        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+            log.error("При генерации подписи произошла ошибка: ", e);
+        }
         return mac;
     }
 }
